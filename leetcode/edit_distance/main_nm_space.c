@@ -34,13 +34,12 @@ int minDistance(const char* w1, const char* w2) {
         w1_len = tmp_len;
     }
 
-    for (i = 0 ; i <= w1_len; i++) {
-        A[i][0] = i;
-    }
     for (j = 1 ; j <= w2_len; j++) {
         A[0][j] = j;
     }
+	A[0][0] = 0;
     for (i = 0 ; i < w1_len ; i++) {
+        A[i + 1][0] = i + 1;
         ni = i + 1;
         for (j = 0 ; j < w2_len ; j++) {
             nj = j + 1;
