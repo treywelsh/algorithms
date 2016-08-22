@@ -13,7 +13,7 @@ int minDistance(const char* w1, const char* w2) {
     size_t i, j;
     size_t w1_len, w2_len, tmp_len;
     size_t min;
-    size_t line;
+    size_t l1, l2; /* each variable index a line of A */
     const char * tmp;
 
     w1_len = strlen(w1);
@@ -23,7 +23,7 @@ int minDistance(const char* w1, const char* w2) {
         return w1_len | w2_len;
     }
 
-    /* cache friendly if small word */
+    /* The longer word is set horizontally in A */
     if (w1_len > w2_len) {
         tmp = w1;
         w1 = w2;
@@ -33,26 +33,28 @@ int minDistance(const char* w1, const char* w2) {
         w1_len = tmp_len;
     }
 
-    line = 1;
+    l1 = 1;
+    l2 = l1 ^ 1;
     for (j = 0 ; j <= w2_len; j++) {
         A[0][j] = j;
     }
     for (i = 0 ; i < w1_len ; i++) {
-        A[line][0] = i + 1;
+        A[l1][0] = i + 1;
         for (j = 0 ; j < w2_len ; j++) {
-            min = A[line ^ 1][j] + (w1[i] != w2[j]);
-            if (min > A[line][j] + 1) {
-                min = A[line][j] + 1;
+            min = A[l2][j] + (w1[i] != w2[j]);
+            if (min > A[l1][j] + 1) {
+                min = A[l1][j] + 1;
             }
-            if (min > A[line ^ 1][j + 1] + 1) {
-                min = A[line ^ 1][j + 1] + 1;
+            if (min > A[l2][j + 1] + 1) {
+                min = A[l2][j + 1] + 1;
             }
-            A[line][j + 1] = min;
+            A[l1][j + 1] = min;
         }
-        line ^= 1;
+        l2 = l1;
+        l1 ^= 1;
     }
 
-    return A[line ^ 1][w2_len];
+    return A[l2][w2_len];
 }
 
 void
@@ -77,5 +79,8 @@ main(int argc, char ** argv)
     test_case("a", "aaa");
     test_case("a", "abc");
     test_case("audi", "lada");
+    test_case("aaaaaaaaaaaaaaaaaaaaudiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaacaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaladaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab");
+    test_case("aaaaaaaaaaaaaaaaaaaladaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab", "au");
+    test_case("sea", "ate");
     return 0;
 }
