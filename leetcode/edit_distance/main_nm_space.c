@@ -68,7 +68,7 @@ test_case(const char * w1, const char * w2) {
     int
 main(int argc, char ** argv)
 {
-    //test_case("", "");
+    test_case("", "");
     test_case("a", "a");
     test_case("qwerty", "qwerty");
     test_case("a", "");
