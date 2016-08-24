@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
-#Use the binary decomposition of b and property : a^(2^k) * a^(2^k) = a^(2^(k+1))
-#O(log2(b))
+#
+# O((n+m)log(n)) time
+# O(n) space
+#
+
 class Solution(object):
 	def intersection(self, nums1, nums2):
 		ret = [] 
