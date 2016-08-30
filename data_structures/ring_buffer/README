@@ -1,0 +1,3 @@
+In order to reuse this data structure in an other project,
+you will have to redefine the storage field called "buf" 
+of the "rbuff" structure with the type for your needs.
