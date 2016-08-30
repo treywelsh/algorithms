@@ -1,0 +1,6 @@
+In order to reuse this data structure in an other project,
+you will have to redefine the storage field called "buf"
+of the "rbuf" structure with the type for your needs.
+
+NOTE: rbuff_init( ... , 3) will initialize a ring buffer
+with a capacity of 7 elements (2^3 - 1)
