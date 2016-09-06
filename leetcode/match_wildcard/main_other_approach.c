@@ -11,44 +11,54 @@
 #define LEN_MAX 4000
 bool dyn[LEN_MAX][LEN_MAX];
 
-/* error case : 
- * test_case("b", "?*?");
- */
 bool isMatch(const char* string, const char* pattern) {
-    size_t i, j;
+    size_t i, j, pi, pj;
     size_t pattern_len, string_len;
-    bool star_flag;
+    bool star;
 
-    star_flag = false;
     pattern_len = strlen(pattern);
     string_len = strlen(string);
-    /* corner cases : empty string etc */
-    if (pattern_len && pattern[0] == '*') {
+
+    /* empty strings */
+    if (pattern_len + string_len == 0) {
         return true;
     }
 
     /* global case */
     i = 0;
     j = 0;
+    pi = 0;
+    pj = 0;
+    star = false;
     while (i < string_len && j < pattern_len) {
         if (pattern[j] == string[i] || pattern[j] == '?') {
-            /* next pattern char */
             j++;
-            star_flag = false;
-        } 
-        if (pattern[j] == '*') {
-            star_flag = true;
+            i++;
+            star = false;
+            continue;
+        } else if (j < pattern_len && pattern[j] == '*') {
             j++;
+            pi = i;
+            pj = j;
+            star = true;
+            continue;
         }
-        i++;
+        if (star) {
+            i++;
+            continue;
+        }
+        printf("pat %c\n", pattern[j]);
+        printf("str %c\n", string[i]);
+        /* Neither star, nor match */
+        i = pi++; 
+        j = pj; 
     }
-    //problem on one letter patterns
-    //test_case("b", "?*?");
-    //test_case("b", "*?*?");
-    //test_case("b", "*?*b");
-    //if (pattern[j] == '?' || !star_flag && (j < pattern_len || i < string_len)) {
-    if (!star_flag && (j < pattern_len || i < string_len)) {
+    if (j == pattern_len - 1 && pattern[pattern_len - 1] != '*') {
         return false;
+    } else if (j < pattern_len - 1) {
+        return false;
+    } else if (!star && j == pattern_len && i < string_len) {
+       return false; 
     }
     return true;
 }
@@ -64,6 +74,7 @@ test_case(const char * string, const char * pattern) {
 main(int argc, char ** argv)
 {
     test_case("", "");
+    test_case("hi", "*?");
     test_case("", "*");
     test_case("a", "*");
     test_case("t", "*t");
@@ -71,6 +82,7 @@ main(int argc, char ** argv)
     test_case("abc", "*");
     test_case("a", "?");
     test_case("aa", "a");
+    test_case("a", "aa");
     test_case("atubic", "a*b?c");
     test_case("atubic", "*");
     test_case("atubic", "a*?c");
@@ -78,6 +90,6 @@ main(int argc, char ** argv)
     test_case("ho", "**ho");
     test_case("ho", "t**ho");
     test_case("b", "?*?");
-    test_case("b", "?*?");
+    test_case("b", "*?*?");
     return 0;
 }
