@@ -1,26 +1,37 @@
-#include<stdio.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 /*
-#define SYMBOLS_COUNT 
-#define STATES_COUNT 
+#define MAX_SYMBOLS_COUNT 26
+#define MAX_STATES_COUNT 
 struct dfa {
-    int dfa[SYMBOLS_COUNT][STATES_COUNT];
+    int dfa[MAX_SYMBOLS_COUNT][MAX_STATES_COUNT];
     int finals[];
-    int symbols[]
+    int symbols[MAX_SYMBOLS_COUNT]
 };
 */
+
+bool isMatch(const char* string, const char* pattern) {
+    
+}
 
 
 int ninputs;
 int check(char,int ); //function declaration
-int dfa[256][10];
+int dfa[256][20];
 char c[256], string[128];
 
-int main()
+int main(int argc, char ** argv)
 {
     int nstates, nfinals;
     int f[128];
     int i,j,s=0,final=0;
+    int state;
+    char * pattern;
+    int pattern_len;
+    //bool star;
     /*
     printf("enter the number of states that your dfa consist of \n");
     scanf("%d",&nstates);
@@ -56,34 +67,64 @@ int main()
         }
     }
     */
-    //pattern = "a*b";
+    //pattern = "a*t?b";
+    //pattern = "a*?b";
+    if (argc < 2) {
+        printf("Give a pattern\n");
+        exit(1);
+    }
+    pattern = argv[1];
+    //pattern = "a?b";
+    pattern_len = strlen(pattern);
+    printf("pattern=%s\n", pattern);
     //pattern = "a*";
     //pattern = "*b";
-    //pattern_len = strlen(pattern);
-    //ninputs = 26;
-    //for(i = 0; i < ninputs; i++) {
-    //  c[i] = i + 'a';
-    //}
-    //nstates = 1; //Initial state
-    //for(i = 0; i < pattern_len; i++) {
-    //  if (pattern[i] == '*') {
-    //      dfa[nstates][pattern[i]] = nstates;
-    //      star_flag = true;
-    //      continue;
-    //  } else if (pattern[i] == '?') {
-    //      for(j = 0; j < ninputs; j++) {
-    //          dfa[nstates][j] = nstates + 1;
-    //      }
-    //  }
-    //  if (star_flag == true) {
-    //      //for all other char than pattern i
-    //      dfa[nstates][] = nstates - 1
-    //  }
-    //  dfa[nstates][pattern[i]] = nstates + 1;
-    //  nstates++;
-    //}
-    //nfinals = 1
-    //f[0] = nstates;
+    ninputs = 26;
+    for(i = 0; i < ninputs; i++) {
+      c[i] = i + 'a';
+    }
+    //count states
+    for(i = 0, nstates = 1 ; i < pattern_len; i++) {
+        if (pattern[i] == '*') {
+            continue;
+        }
+        nstates++;
+    }
+
+    //fill trans table
+    for(i = 0; i < nstates ; i++) {
+        for(j = 0; j < ninputs; j++) {
+            dfa[j][i] = -1;
+        }
+    }
+
+    //star = false;
+    for(i = 0, state = 0; i < pattern_len; i++) {
+        if (pattern[i] == '*') {
+            for (j = 0 ; j < ninputs ; j++) {
+                dfa[c[j]][state] = state;
+                dfa[c[j]][state + 1] = state;
+            }
+            if (i + 1 < pattern_len) {
+                //if (pattern[i + 1] == '?') {}
+                dfa[pattern[i + 1]][state] = state + 1;
+                dfa[pattern[i + 1]][state + 1] = state + 1;
+            }
+            state++; /* take into account next letter */
+            continue;
+        } else if (pattern[i] == '?') {
+            for(j = 0; j < ninputs; j++) {
+                dfa[c[j]][state] = state + 1;
+            }
+            state++;
+            continue;
+        }
+        //TODO check if pattern[i] letter is in c inputs chars array. 
+        dfa[pattern[i]][state] = state + 1;
+        state++;
+    }
+    nfinals = 1;
+    f[0] = nstates - 1;
 
     /*
     nstates = 2;
@@ -139,8 +180,8 @@ int check(char b, int d)
         printf("%c - %c\n", b, c[j]);
         if(b == c[j])
         {
-            printf("return state:%d\n", dfa[c[j]][d]);
-            return(dfa[c[j]][d]);
+            printf("return state:%d\n", dfa[b][d]);
+            return(dfa[b][d]);
         }
     }
     return -1;
