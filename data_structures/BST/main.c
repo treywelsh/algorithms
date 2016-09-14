@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "bst.h"
 
 int
@@ -7,7 +8,8 @@ main (int argc, char *argv[]) {
     (void)argv;
 
     struct bst b;
-    int i, idx, ret, a;
+    int i, ret, a;
+    unsigned int idx;
 
     bst_init(&b, 1000);
 

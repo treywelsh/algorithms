@@ -35,12 +35,12 @@ struct bst {
 #define bst_node_count(b) ((b)->node_last - BST_FIRST)
 //#define bst_get_node(b, i) ((b)->nodes[(i)])
 
-int bst_init(struct bst* b, size_t max_len);
+int bst_init(struct bst* b, unsigned int max_len);
 void bst_clean(struct bst* b);
 
 int bst_insert(struct bst* b, int elm);
 int bst_remove(struct bst* b, int elm);
-int bst_find(struct bst* b, int elm, int *ret);
+int bst_find(struct bst* b, int elm, unsigned int *ret);
 int bst_inorder(struct bst* b);
 
 #endif /* BST_H_ */

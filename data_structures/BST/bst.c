@@ -1,12 +1,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "stack.h"
+#include <string.h>
+
+#include <stack.h>
+
 #include "bst.h"
 
 int
-bst_init(struct bst* b, size_t max_len) {
-    int i;
+bst_init(struct bst* b, unsigned int max_len) {
 
     assert(b != NULL);
     assert(max_len >= 3);
@@ -29,7 +31,7 @@ bst_clean(struct bst* b) {
 }
 
 static int
-__bst_find(struct bst * b, int elm, int * index, int * parent_index) {
+__bst_find(struct bst * b, int elm, unsigned int * index, unsigned int * parent_index) {
     unsigned int i, i_prev;
 
     assert(b != NULL);
@@ -46,6 +48,7 @@ __bst_find(struct bst * b, int elm, int * index, int * parent_index) {
         return 1;
     }
 
+    i_prev = BST_NULL;
     i = BST_FIRST;
     while ((b->nodes[i]).val != elm) {
         i_prev = i;
@@ -67,44 +70,47 @@ __bst_find(struct bst * b, int elm, int * index, int * parent_index) {
 }
 
 /*
-static int
-__bst_insert(unsigned int root_index, int elm) {
-    //unsigned int i, i_prev;
-    return 0;
+   static int
+   __bst_insert(unsigned int root_index, int elm) {
+//unsigned int i, i_prev;
+return 0;
 }
 */
 
 int
 bst_insert(struct bst* b, int elm) {
+    struct bst_node * bnode;
     unsigned int i;
 
     assert(b != NULL);
     assert(b->nodes != NULL);
 
     if (bst_is_full(b)) {
-       printf("full, cannot insert\n");
-       return 1;
+        printf("full, cannot insert\n");
+        return 1;
     }
 
-    if (!bst_is_empty(b)) {
-        /* Look for insertion point in tree */
-        i = BST_FIRST;
-        while(1) {
-            if (elm > (b->nodes)[i].val && (b->nodes)[i].right != BST_NULL) {
-                i = (b->nodes)[i].right;
-            } else if (elm <= (b->nodes)[i].val && (b->nodes)[i].left != BST_NULL) {
-                i = (b->nodes)[i].left;
-            } else {
-                break;
-            }
+
+    /* Look for insertion point in tree */
+    i = BST_FIRST;
+    while(i <= b->node_last) {
+        bnode = &(b->nodes)[i];
+
+        if (elm > bnode->val && bnode->right != BST_NULL) {
+            i = bnode->right;
+            continue;
+        } else if (elm <= bnode->val && bnode->left != BST_NULL) {
+            i = bnode->left;
+            continue;
         }
 
         /* link to parent node*/
-        if (elm > (b->nodes)[i].val) {
-            (b->nodes)[i].right = b->node_last;
+        if (elm > bnode->val) {
+            bnode->right = b->node_last;
         } else {
-            (b->nodes)[i].left = b->node_last;
+            bnode->left = b->node_last;
         }
+        break;
     }
 
     /* Copy node at end of array */
@@ -149,15 +155,17 @@ bst_remove(struct bst* b, int elm) {
 }
 
 int
-bst_find(struct bst* b, int elm, int *ret) {
+bst_find(struct bst* b, int elm, unsigned int *ret) {
     unsigned int i, i_prev;
 
     assert(b != NULL);
     assert(b->nodes != NULL);
     assert(ret != NULL);
+
     i = BST_NULL;
     i_prev = BST_NULL;
     *ret = BST_NULL;
+
     if (!__bst_find(b, elm, &i, &i_prev)) {
         return 0;
     }
@@ -166,44 +174,71 @@ bst_find(struct bst* b, int elm, int *ret) {
     return 1;
 }
 
+#define STACK_SIZE 1024
+/*
+ * struct bst_inorder_iter {
+ *  struct bst* b;
+ *  struct stack stck;
+ *  unsigned int node_i;
+ * }
+ *
+ * int
+ * bst_inorder_iter_init(struct bst* b, struct bst_inorder_iter * it) {
+ *    if (bst_is_empty(b)) {
+ *        return 1;
+ *    }
+ *
+ *    stack_init(&stck, STACK_SIZE);
+ *    node_i = BST_FIRST;
+ *
+ *  return 0;
+ * }
+ *
+ *
+ * int
+ * bst_inorder_iter_next(struct bst_inorder_iter * it) {
+ *
+ *  return 0;
+ * }
+ *
+ * int
+ * bst_inorder_iter_clean(struct bst_inorder_iter * it) {
+ *
+ *      stack_clean(&it->stck);
+ *      return 0;
+ * }
+ */
 int bst_inorder(struct bst* b) {
-    int node;
-    int prev_node;
-    struct stack *stck;
+    unsigned int node_i;
+    struct stack stck;
 
     if (bst_is_empty(b)) {
         return 1;
     }
 
-    stck = malloc(sizeof(*stck));
-    if (stck == NULL) {
-        printf("Can't allocate memory\n");
-        return 1;
-    }
+    stack_init(&stck, STACK_SIZE);
 
-    stack_init(&stck);
-
-    prev_node = BST_NULL;
-    node = BST_FIRST;
+    //prev_node_i = BST_NULL;
+    node_i = BST_FIRST;
     do {
-        if (node != BST_NULL) {
+        if (node_i != BST_NULL) {
             assert(!stack_is_full(&stck));
-            stack_push(&stck, node);
-            node = ((b->nodes)[node]).left;
+            stack_push(&stck, node_i);
+            node_i = ((b->nodes)[node_i]).left;
             continue;
         }
         if (!stack_is_empty(&stck)) {
-            node = stack_pop(&stck);
+            node_i = stack_pop(&stck);
             //TODO return array or make an iterator ?
-            printf("%d ", ((b->nodes)[node]).val);
-            prev_node = node;
+            printf("%d ", ((b->nodes)[node_i]).val);
+            //prev_node_i = node;
         }
-        node = ((b->nodes)[node]).right;
-    } while (node != BST_NULL || !stack_is_empty(&stck));
+        node_i = ((b->nodes)[node_i]).right;
+    } while (node_i != BST_NULL || !stack_is_empty(&stck));
     //TODO
     printf("\n");
 
-    free(stck);
+    stack_clean(&stck);
 
     return 0;
 }
