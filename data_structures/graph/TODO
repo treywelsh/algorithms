@@ -1,0 +1,5 @@
+-Interface with graph representation tool. Graphviz ?
+-dfs
+-graph remove node
+-graph compression when too much edge removed
+-graph redimensionnement when it's too small
