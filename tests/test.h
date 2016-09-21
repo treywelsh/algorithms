@@ -1,27 +1,16 @@
 #ifndef TEST_C_
 #define TEST_C_
 
-#include <inttypes.h>
-#include <stdio.h>
-#include <stdint.h>
+struct test_suite {
+    unsigned int tests_count; 
+    unsigned int tests_failed; 
+};
 
-uint32_t tests_count = 0; 
-static uint32_t tests_passed = 0; 
+int test_init(struct test_suite * ts);
+int _test_assert(struct test_suite * ts, const char *test, char result);
 
-static inline void _assert(char *test, char result) {
-    tests_count++;
-    printf("\"%s\" : ", test);
-    if (result) {
-        tests_passed++;
-        printf("OK\n");
-        return;
-    }
-    printf("FAILED\n");
-}
+#define test_assert(ts, t) _test_assert((ts), #t, (t))
 
-#define test_assert(t) _assert(#t, (t))
-
-
-
+int test_display(const struct test_suite * ts);
 
 #endif /* TEST_C_ */
