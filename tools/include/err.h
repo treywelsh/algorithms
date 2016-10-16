@@ -15,7 +15,6 @@ extern FILE *fdout;
 #define INIT_ERR() FILE *fdout
 
 #if defined(DEBUG)
-    #undef NDEBUG
     #define dbg_print(FMT, ...) fprintf(fdout, \
         "DEBUG(%s:%d <%s>): " FMT, \
         __FILE__, __LINE__, __func__, ##__VA_ARGS__)
@@ -26,7 +25,6 @@ extern FILE *fdout;
         "%s:%d <%s>: " FMT, \
         __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #else
-    #define NDEBUG
     #define dbg_print(...)
     #define err_print(FMT, ...) fprintf(fdout, \
         "ERROR: " FMT, ##__VA_ARGS__)

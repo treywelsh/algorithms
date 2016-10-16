@@ -8,19 +8,19 @@ BIN = stack_test
 SRC = main.c
 OBJ = $(SRC:.c=.o)
 
-#Mandatory flags
-CFLAGS += -fstrict-aliasing ${INCLUDE}
-
 ifeq ($(CC), clang)
 	CFLAGS = -Weverything -Wno-gnu-zero-variadic-macro-arguments
 	DEBUG = 1
 endif
 
+#Mandatory flags
+CFLAGS += -fstrict-aliasing ${INCLUDE}
+
 DEBUG ?= 0
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g -fno-inline
 else
-	CFLAGS += -O2
+	CFLAGS += -O2 -DNDEBUG
 endif
 
 STATIC ?= 0
