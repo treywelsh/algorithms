@@ -4,8 +4,7 @@
 #include <stdint.h>
 
 #include <err.h>
-
-#include "stack.h"
+#include <stack.h>
 
 /* node data */
 struct graph_node {

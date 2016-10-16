@@ -5,7 +5,7 @@ INCLUDE= -I ../../tools/include/
 
 BIN = graph_test
 #SRC = $(wildcard *.c)
-SRC = graph.c graph_traversal.c main.c stack.c
+SRC = graph.c graph_traversal.c main.c
 OBJ = $(SRC:.c=.o)
 
 #Mandatory flags
