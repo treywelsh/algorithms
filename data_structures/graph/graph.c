@@ -4,9 +4,9 @@
 #include <string.h>
 
 #include <err.h>
+#include <stack.h>
 
 #include "graph.h"
-#include "stack.h"
 
 /*
  * See another graph implem : https://rosettacode.org/wiki/Dijkstra's_algorithm#C
