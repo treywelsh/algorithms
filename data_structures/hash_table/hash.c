@@ -72,17 +72,16 @@ ht_add(ht_t * ht, ht_elt_t * e) {
 
     assert(ht != NULL);
     assert(e != NULL);
-    assert((e->key).word != NULL);
-    assert((e->key).len > 0);
+    assert(elt_is_invalid(e));
 
     hash = ht_hash(&e->key);
     SLIST_FOREACH(p, &(ht->heads_elt)[hash & (ht->size - 1)], next) {
         /* compare keys */
         if (!ht_elt_cmp(&p->key, &e->key)) {
             /* If already in hash, act on
-	     * already inserted element
-	     */
-	    ht_elt_already_added(e);
+             * already inserted element
+             */
+            ht_elt_already_added(e);
             return 1;
         }
     }

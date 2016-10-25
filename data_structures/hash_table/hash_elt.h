@@ -60,6 +60,17 @@ ht_elt_destroy(ht_elt_t * e) {
 }
 
 static inline int
+ht_elt_is_invalid(const ht_elt_t * e) {
+    if(e->key).word == NULL) {
+        return 1;
+    }
+    if((e->key).len <= 0) {
+        return 2;
+    }
+    return 0;
+}
+
+static inline int
 ht_elt_cmp(const ht_key_t * e1, const ht_key_t * e2) {
     assert(e1 != NULL);
     assert(e1->word != NULL);
