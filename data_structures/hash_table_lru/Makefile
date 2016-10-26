@@ -5,7 +5,7 @@ INCLUDE= -I ../../tools/include/
 
 BIN = hash_test
 #SRC = $(wildcard *.c)
-SRC = hash.c main.c
+SRC = hash.c test.c
 OBJ = $(SRC:.c=.o)
 
 ifeq ($(CC), clang)

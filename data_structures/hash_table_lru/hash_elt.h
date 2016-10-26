@@ -2,79 +2,68 @@
 #define HASH_ELT_H_
 
 #include <assert.h>
-#include <sys/queue.h>
+#include <stdio.h>
 #include <string.h>
+#include <sys/queue.h>
 
-/* For each new usage of this implementation of hash table,
- * this header has to be redefined.
- */
+#define MAC_LEN 6
 
-struct ht_key {
-    char * word;
-    size_t len;
-};
-typedef struct ht_key ht_key_t;
+/* TODO only this header is user redefined ?? useless, merge headers ? 
+ * struct ht_elt_key {
+ *      uint8_t mac[MAC_LEN];
+ * };
+ * typedef struct ht_elt_key ht_elt_key_t;
+ * */
 
 /* Hastable entry */
 struct ht_elt {
-    SLIST_ENTRY(ht_elt) next;
-    LIST_ENTRY(ht_elt) next_lru;
+    LIST_ENTRY(ht_elt) next;
+
+    TAILQ_ENTRY(ht_elt) next_lru;
 
     /* key */
-    ht_key_t key;
+    /* ht_elt_key_t key*/
+    uint8_t mac[MAC_LEN];
 
     /* value */
     unsigned int count;
-
-    /* remove padding warning */
-    unsigned int padding;
 };
 typedef struct ht_elt ht_elt_t;
 
 
 static inline void 
-ht_elt_reset(ht_elt_t * e) {
-    const ht_key_t null = { .word = NULL, .len = 0};
-    e->key = null;
-    e->count = 0;
-}
+ht_elt_reset(ht_elt_t * e, const uint8_t * mac) {
+//ht_elt_reset(ht_elt_t * e, ht_elt_key_t * key) {
 
-static inline void
-ht_key_print(const ht_key_t * k) {
-    if (k->word != NULL) {
-        printf("%*s\n", k->len, k->word);
-    }
+    //assert(strlen((char *)(key->mac)) == MAC_LEN);
+    assert(strlen((char *)mac) == MAC_LEN);
+
+    memcpy((char *)(e->mac), (char *)mac, MAC_LEN);
+    e->count = 0;
+
+    LIST_NEXT(e, next) = NULL;
 }
 
 static inline int
-ht_elt_cmp(const ht_key_t * e1, const ht_key_t * e2) {
+ht_elt_cmp(const uint8_t * e1, const uint8_t * e2) {
     assert(e1 != NULL);
-    assert(e1->word != NULL);
-    assert(e1->len > 0);
-
     assert(e2 != NULL);
-    assert(e2->word != NULL);
-    assert(e2->len > 0);
 
-    if (e1->len != e2->len) {
-        return 1;
-    }
-    return strncmp(e1->word, e2->word, e1->len);
+    return strncmp((char *)e1, (char *)e2, MAC_LEN);
 }
 
 /* Jenkins one at a time hash algorithm */
 static inline size_t
-ht_hash(const ht_key_t * k) {
+ht_hash(const uint8_t * k) {
     size_t hash;
     size_t i;
 
     assert(k != NULL);
-    assert(k->word != NULL);
 
     hash = 0;
-    for (i = 0; i < k->len; i++)
+    for (i = 0; i < MAC_LEN; i++)
     {
-        hash += (k->word)[i]; /* differ signedness*/
+        hash += k[i];
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
