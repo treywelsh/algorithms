@@ -10,10 +10,11 @@ main(int argc, char *argv[]) {
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
+    ht_key_t key;
     ssize_t read;
     int ret;
     ht_t ht;
-    ht_elt_t *result_lookup;
+    ht_elt_t *result;
     const char * filename = "test_file";
 
     ret = ht_init(&ht, 10, 5);
@@ -31,10 +32,15 @@ main(int argc, char *argv[]) {
     while ((read = getline(&line, &len, fp)) != -1) {
 
         printf("adding \"%s\" len=%zu\n", line, read);
-        line[6] = '\0';
-        result_lookup = ht_lookup(&ht, line);
-        (result_lookup->count)++;
-        printf("%s with count %u\n", line, result_lookup->count);
+
+        ht_key_init(&key, line, read);
+
+        result = ht_lookup(&ht, &key);
+
+        assert(result != NULL);
+        (result->count)++;
+        printf("%s present with count %u\n", line, result->count);
+
         printf("==========================LRU========================\n");
         ht_print_lru_content(&ht);
         printf("=====================================================\n");

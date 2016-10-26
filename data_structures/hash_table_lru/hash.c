@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/queue.h>
@@ -71,11 +72,11 @@ ht_clean(ht_t * ht) {
 }
 
 static inline ht_elt_t *
-_ht_hash_lookup(const ht_t * ht, const uint8_t * mac, size_t hash) {
+_ht_lookup_hash(const ht_t * ht, const ht_key_t * key, size_t hash) {
     ht_elt_t *p;
 
     LIST_FOREACH(p, &(ht->elt_heads)[hash & (ht->size - 1)], next) {
-        if (!ht_elt_cmp((const uint8_t *)&(p->mac), mac)) {
+        if (!ht_key_cmp(&(p->key), key)) {
             return p;
         }
     }
@@ -83,17 +84,17 @@ _ht_hash_lookup(const ht_t * ht, const uint8_t * mac, size_t hash) {
 }
 
 ht_elt_t *
-ht_lookup(ht_t * ht, const uint8_t * mac) {
+ht_lookup(ht_t * ht, const ht_key_t * key) {
     size_t hash;
     size_t old_hash;
     ht_elt_t *ret;
     ht_elt_t *elt;
 
-    hash = ht_hash(mac);
-    ret = _ht_hash_lookup(ht, mac, hash);
+    hash = ht_hash(key);
+    ret = _ht_lookup_hash(ht, key, hash);
     if (ret != NULL) {
-        /* if already exist, lru update :
-         * element is moved to the end
+        /* If key is already in hash table :
+         * element is moved to the end of lru
          */
         TAILQ_REMOVE(ht->lru_head, ret, next_lru);
         TAILQ_INSERT_TAIL(ht->lru_head, ret, next_lru);
@@ -110,8 +111,8 @@ ht_lookup(ht_t * ht, const uint8_t * mac) {
 
     /* Search the position of this (maybe) old hash element
      * in order to remove it */
-    old_hash = ht_hash(elt->mac);
-    ret = _ht_hash_lookup(ht, elt->mac, old_hash);
+    old_hash = ht_hash(&(elt->key));
+    ret = _ht_lookup_hash(ht, &(elt->key), old_hash);
     if (ret != NULL) {
         assert(elt == ret);
         LIST_REMOVE(ret, next);
@@ -119,7 +120,7 @@ ht_lookup(ht_t * ht, const uint8_t * mac) {
 
     /* reset element with new mac address and then
      * insert it in hash */
-    ht_elt_reset(elt, mac);
+    ht_elt_reset(elt);
     LIST_INSERT_HEAD(&(ht->elt_heads)[hash & (ht->size - 1)], elt, next);
 
     return elt;
@@ -129,6 +130,6 @@ void
 ht_print_lru_content(const ht_t * ht) {
     ht_elt_t *p;
     TAILQ_FOREACH(p, ht->lru_head, next_lru) {
-        printf("%s\n", &(p->mac));
+        printf("%s\n", (p->key).data);
     }
 }
