@@ -2,18 +2,9 @@
 #define HASH_H_
 
 #include <stdint.h>
-#include <string.h>
 #include <sys/queue.h>
 
 #include "hash_elt.h"
-
-/* Return codes */
-enum {
-    SUCCESS = 0,
-    HT_ALREADY_ADDED,
-    HT_MALLOC_ERROR,
-    HT_ERROR,
-};
 
 /* Hastable */
 struct ht {

@@ -6,36 +6,30 @@
 #include <string.h>
 #include <sys/queue.h>
 
+#include "err.h"
+
+#define MAC_LEN 6
+
 struct ht_key {
-     uint8_t * data;
-     size_t data_len;
+     uint8_t mac[MAC_LEN];
+     uint16_t padding; /* Unused, remove warnings */
 };
 typedef struct ht_key ht_key_t;
 
-#define ht_key_reset(k) do { \
-    memset((k)->data, 0, (k)->data_len); \
-    (k)->data_len = 0; \
-}while(0)
+#define ht_key_reset(k) \
+    memset((k)->mac, 0, MAC_LEN)
 
+#define ht_key_cpy(d, s) \
+    memcpy((d)->mac, (s)->mac, MAC_LEN);
 
-static inline int 
-ht_key_init(ht_key_t * k, uint8_t * data, size_t data_len) {
-    assert(k != NULL);
-
-    k->data = malloc(data_len);
-    if (k->data == NULL) {
-        return 1;
+static inline int
+ht_key_init(ht_key_t * k, uint8_t * mac, size_t mac_len) {
+    if (mac_len != MAC_LEN) {
+        fprintf(stderr, "Bad mac adress size\n");
+        return ERROR;
     }
-
-    memcpy(k->data, data, data_len);
-    k->data_len = data_len;
-
-    return 0;
-}
-
-static inline void
-ht_key_clean() {
-    
+    memcpy(k->mac, mac, MAC_LEN);
+    return SUCCESS;
 }
 
 static inline int
@@ -43,14 +37,10 @@ ht_key_cmp(const ht_key_t * k1, const ht_key_t * k2) {
     assert(k1 != NULL);
     assert(k2 != NULL);
 
-    if (k1->data_len != k2->data_len) {
-        return 1;
-    }
-
-    return memcmp(k1->data, k2->data, k1->data_len);
+    return memcmp(k1->mac, k2->mac, MAC_LEN);
 }
 
-/* Jenkins one at a time hash algorithm */
+/* Jenkins one at a time hash */
 static inline size_t
 ht_hash(const ht_key_t * k) {
     size_t hash;
@@ -59,9 +49,9 @@ ht_hash(const ht_key_t * k) {
     assert(k != NULL);
 
     hash = 0;
-    for (i = 0; i < k->data_len; i++)
+    for (i = 0; i < MAC_LEN ; i++)
     {
-        hash += (k->data)[i];
+        hash += (k->mac)[i];
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
@@ -81,17 +71,16 @@ struct ht_elt {
     ht_key_t key;
 
     /* value */
-    unsigned int count;
+    uint64_t count;
 };
 typedef struct ht_elt ht_elt_t;
 
 static inline void 
 ht_elt_reset(ht_elt_t * e) {
-    LIST_NEXT(e, next) = NULL;
-    TAILQ_NEXT(e, next_lru) = NULL;
-
     ht_key_reset(&(e->key));
-    e->count = 0; /* TODO leave user manage this in his source file ? */
+
+    /* reset value */
+    e->count = 0;
 }
 
 #endif /* HASH_ELT_H_ */

@@ -1,54 +1,59 @@
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "err.h"
 #include "hash.h"
-
 
 int
 main(int argc, char *argv[]) {
     (void)argc; (void)argv;
-    FILE * fp;
-    char * line = NULL;
-    size_t len = 0;
     ht_key_t key;
-    ssize_t read;
     int ret;
     ht_t ht;
     ht_elt_t *result;
-    const char * filename = "test_file";
+    size_t i;
+    size_t len;
+    const char * strings[] = {
+        "AAAAAA",
+        "BBBBBB",
+        "CCCCCC",
+        "DDDDDD",
+        "DDDDDDaaa",
+        "EEEEEE",
+        "AAAAAA",
+        "FFFFFF",
+        "BBBBBB"
+    };
+    size_t strings_count = 8;
 
-    ret = ht_init(&ht, 10, 5);
-    if (ret != SUCCESS ) {
+    ret = ht_init(&ht, 10, 6);
+    if (ret != SUCCESS) {
         return ret;
     }
 
-    fp = fopen(filename, "r");
-    if (fp == NULL) {
-        printf("error: cannnot open %s\n", filename);
-        exit(1);
-    }
+    /* fill hash from strings */
+    for (i = 0; i < strings_count; i++) {
+        len = strlen(strings[i]);
 
-    /* Each line of the file is inserted in hash */
-    while ((read = getline(&line, &len, fp)) != -1) {
+        printf("adding \"%s\" len=%zu\n", strings[i], len);
 
-        printf("adding \"%s\" len=%zu\n", line, read);
-
-        ht_key_init(&key, line, read);
+        ret = ht_key_init(&key, (uint8_t *)strings[i], len);
+        if (ret != 0) {
+            continue;
+        }
 
         result = ht_lookup(&ht, &key);
-
         assert(result != NULL);
+
+        /* modify value, it's a counter here */
         (result->count)++;
-        printf("%s present with count %u\n", line, result->count);
+        printf("%s present with value %" PRIu64 "\n", strings[i], result->count);
 
         printf("==========================LRU========================\n");
         ht_print_lru_content(&ht);
         printf("=====================================================\n");
     }
-
-    fclose(fp);
-    if (line)
-        free(line);
 
     ht_clean(&ht);
 

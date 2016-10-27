@@ -5,6 +5,7 @@
 #include <string.h>
 #include <sys/queue.h>
 
+#include "err.h"
 #include "hash_elt.h"
 #include "hash.h"
 
@@ -14,7 +15,9 @@ ht_init(ht_t *ht, size_t pow_size, size_t elt_max) {
     size_t i;
     size_t size;
 
-    assert(ht != NULL && pow_size > 0);
+    assert(ht != NULL);
+    assert(pow_size > 0);
+    assert(elt_max > 1);
 
     /* hash table size */
     size = (1 << pow_size);
@@ -45,8 +48,6 @@ ht_init(ht_t *ht, size_t pow_size, size_t elt_max) {
     /* Fill LRU with pool elements */
     for (i = 0 ; i < elt_max ; i++) {
         TAILQ_INSERT_HEAD(ht->lru_head, &(ht->pool)[i], next_lru);
-        //TODO refactor : reset element ?
-        memset(&(ht->pool)[i], '\0', 6);
     }
 
     ht->lru_max = elt_max;
@@ -57,6 +58,7 @@ ht_init(ht_t *ht, size_t pow_size, size_t elt_max) {
 void
 ht_clean(ht_t * ht) {
     size_t i;
+
     assert(ht != NULL);
 
     /* Remove hash elements */
@@ -75,6 +77,9 @@ static inline ht_elt_t *
 _ht_lookup_hash(const ht_t * ht, const ht_key_t * key, size_t hash) {
     ht_elt_t *p;
 
+    assert(ht != NULL);
+    assert(key != NULL);
+
     LIST_FOREACH(p, &(ht->elt_heads)[hash & (ht->size - 1)], next) {
         if (!ht_key_cmp(&(p->key), key)) {
             return p;
@@ -89,6 +94,9 @@ ht_lookup(ht_t * ht, const ht_key_t * key) {
     size_t old_hash;
     ht_elt_t *ret;
     ht_elt_t *elt;
+
+    assert(ht != NULL);
+    assert(key != NULL);
 
     hash = ht_hash(key);
     ret = _ht_lookup_hash(ht, key, hash);
@@ -121,6 +129,7 @@ ht_lookup(ht_t * ht, const ht_key_t * key) {
     /* reset element with new mac address and then
      * insert it in hash */
     ht_elt_reset(elt);
+    ht_key_cpy(&(elt->key), key);
     LIST_INSERT_HEAD(&(ht->elt_heads)[hash & (ht->size - 1)], elt, next);
 
     return elt;
@@ -129,7 +138,14 @@ ht_lookup(ht_t * ht, const ht_key_t * key) {
 void
 ht_print_lru_content(const ht_t * ht) {
     ht_elt_t *p;
+    size_t i;
+
+    assert(ht != NULL);
+
     TAILQ_FOREACH(p, ht->lru_head, next_lru) {
-        printf("%s\n", (p->key).data);
+        for (i = 0; i < MAC_LEN; i++) {
+            printf("%02x ", ((p->key).mac)[i]);
+        }
+        printf("\n");
     }
 }
