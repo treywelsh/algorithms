@@ -1,7 +1,7 @@
 CFLAGS ?= -Wall -Wextra
 LDFLAGS ?=
 CC ?= gcc
-INCLUDE= -I ../../tools/include/
+INCLUDE= -I ../../include/
 
 BIN = heap_test
 #SRC = $(wildcard *.c)

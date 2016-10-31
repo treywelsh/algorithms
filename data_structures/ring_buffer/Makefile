@@ -1,7 +1,7 @@
 CFLAGS ?= -Wall -Wextra
 LDFLAGS ?=
 CC ?= gcc
-INCLUDE= -I ../../tools/include/
+INCLUDE= -I ../../include/
 
 BIN = rbuff_test
 #SRC = $(wildcard *.c)

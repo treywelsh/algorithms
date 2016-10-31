@@ -1,7 +1,7 @@
 CFLAGS ?= -Wall -Wextra -std=c99
 LDFLAGS ?=
 CC ?= gcc
-INCLUDE= -I ../../tools/include/
+INCLUDE= -I ../../include/
 
 BIN = stack_test
 #SRC = $(wildcard *.c)
