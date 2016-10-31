@@ -1,4 +1,6 @@
 *.o
 *~
 *.swp
+*.a
+*.so
 tags
