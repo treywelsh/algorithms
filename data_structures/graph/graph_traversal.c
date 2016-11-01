@@ -79,7 +79,7 @@ graph_tsort_create(struct graph* g, struct graph_tsort_iter ** it)
     for (nd = 0 ; nd < g->nds_count ; nd++) {
         graph_foreach_neighbor(g, nd, nh) {
             (it_tmp->adj_cnt)[nd] += 1;
-            graph_insert_edge(&(it_tmp->g_rev), nh, nd);
+            graph_add_edge(&(it_tmp->g_rev), nh, nd);
         }
     }
 

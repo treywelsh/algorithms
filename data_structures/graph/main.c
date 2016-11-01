@@ -17,19 +17,19 @@ test_case_loop(void) {
     graph_init(&g, 20, 20);
 
     for (i = 0 ; i < 10 ; i++) {
-        graph_insert_node(&g);
+        graph_add_node(&g);
     }
 
-    graph_insert_edge(&g, 3, 1);
-    graph_insert_edge(&g, 1, 5);
-    graph_insert_edge(&g, 1, 2);
-    graph_insert_edge(&g, 5, 4);
-    graph_insert_edge(&g, 5, 2);
+    graph_add_edge(&g, 3, 1);
+    graph_add_edge(&g, 1, 5);
+    graph_add_edge(&g, 1, 2);
+    graph_add_edge(&g, 5, 4);
+    graph_add_edge(&g, 5, 2);
 
     /* TEST LOOP */
     printf("add loop and make dfs :\n");
-    graph_insert_edge(&g, 4, 3);
-    for (i = 0; i < graph_get_nodes_count(&g); i++) {
+    graph_add_edge(&g, 4, 3);
+    for (i = 0; i < graph_nodes_count(&g); i++) {
         if (graph_is_cyclic(&g, i)) {
             printf("--> loop detected %d\n", i);
             break;
@@ -38,7 +38,7 @@ test_case_loop(void) {
 
     printf("remove loop and make dfs :\n");
     graph_remove_edge(&g, 4, 3);
-    for (i = 0; i < graph_get_nodes_count(&g); i++) {
+    for (i = 0; i < graph_nodes_count(&g); i++) {
         if (graph_is_cyclic(&g, i)) {
             printf("--> error : loop detected %d\n", i);
             break;
@@ -61,15 +61,15 @@ test_case_topo_sort(void) {
     graph_init(&g, 20, 20);
 
     for (i = 0 ; i < 10 ; i++) {
-        graph_insert_node(&g);
+        graph_add_node(&g);
     }
 
-    graph_insert_edge(&g, 3, 1);
-    graph_insert_edge(&g, 1, 5);
-    graph_insert_edge(&g, 1, 2);
-    graph_insert_edge(&g, 5, 4);
-    graph_insert_edge(&g, 5, 2);
-    graph_insert_edge(&g, 4, 8);
+    graph_add_edge(&g, 3, 1);
+    graph_add_edge(&g, 1, 5);
+    graph_add_edge(&g, 1, 2);
+    graph_add_edge(&g, 5, 4);
+    graph_add_edge(&g, 5, 2);
+    graph_add_edge(&g, 4, 8);
 
     /* TEST DFS  */
 
