@@ -1,5 +1,4 @@
--Interface with graph representation tool. Graphviz ?
--dfs
--graph remove node
--graph compression when too much edge removed
--graph redimensionnement when it's too small
+- refactor all test cases
+- I/O ? interface with existing ? (graphviz ?)
+- graph redimensionnement when it's too small ?
+- Makefile : add "test" target, and develop another sample
