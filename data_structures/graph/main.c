@@ -8,6 +8,7 @@
 /* test cases */
 int test_case_loop(void);
 int test_case_topo_sort(void);
+int test_case_dfs(void);
 
 int
 test_case_loop(void) {
@@ -79,7 +80,11 @@ test_case_topo_sort(void) {
     /* TEST DFS  */
 
     printf("topo sort greedy (3 elements max at a time) :\n");
-    graph_tsort_create(&g, &tsort_it);
+
+    if (graph_tsort_create(&g, &tsort_it)) {
+        printf("graph_tsort_create failed, maybe a cycle in graph ?\n");
+        return 1;
+    }
     while ((nds_cnt = graph_tsort_next(tsort_it, nds, 4)) > 0) {
         for (i = 0; i < nds_cnt; i++) {
             printf("%u ", nds[i]);
@@ -107,6 +112,48 @@ test_case_topo_sort(void) {
     return 0;
 }
 
+int
+test_case_dfs(void) {
+    uint32_t i;
+    uint32_t nds_cnt;
+    struct graph g;
+    struct graph_dfs_iter * dfs_it = NULL;
+    uint32_t nds[4];
+
+    graph_init(&g, 20, 20);
+
+    for (i = 0 ; i < 10 ; i++) {
+        graph_add_node(&g);
+    }
+
+    graph_add_edge(&g, 3, 1);
+    graph_add_edge(&g, 1, 5);
+    graph_add_edge(&g, 1, 2);
+    graph_add_edge(&g, 5, 4);
+    graph_add_edge(&g, 5, 2);
+
+    printf("make dfs :\n");
+
+    if (graph_dfs_create(&g, &dfs_it, 1)) {
+        printf("graph_dfs_create failed, maybe a cycle in graph ?\n");
+        return 1;
+    }
+    printf("graph_dfs_next : %u\n", graph_dfs_next(dfs_it, nds, 4));
+    while ((nds_cnt = graph_dfs_next(dfs_it, nds, 4)) > 0) {
+        printf("nds_cnt = %u\n", nds_cnt);
+        for (i = 0; i < nds_cnt; i++) {
+            printf("%u ", nds[i]);
+        }
+        printf("\n");
+    }
+    printf("end dfs\n");
+    graph_dfs_destroy(dfs_it);
+
+    graph_clean(&g);
+
+    return 0;
+}
+
 
 INIT_ERR();
 
@@ -122,6 +169,9 @@ main (int argc, char *argv[]) {
     
     printf("\n=== Test case 2\n");
     test_case_topo_sort();
+
+    printf("\n=== Test case 3\n");
+    test_case_dfs();
 
     return 0;
 }

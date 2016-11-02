@@ -232,7 +232,6 @@ graph_is_cyclic(struct graph* g, uint32_t first_nd) {
 
     assert(g != NULL);
     assert(first_nd < graph_nodes_count(g));
-    //printf("nodes count %u\n", graph_nodes_count(g));
 
     stack_init(&stk, graph_nodes_count(g));
     stack_push(&stk, first_nd);
