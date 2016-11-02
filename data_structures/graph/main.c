@@ -11,7 +11,7 @@ int test_case_topo_sort(void);
 
 int
 test_case_loop(void) {
-    unsigned int i;
+    uint32_t i;
     struct graph g;
 
     graph_init(&g, 20, 20);
@@ -52,19 +52,24 @@ test_case_loop(void) {
 
 int
 test_case_topo_sort(void) {
-    unsigned int i;
-    unsigned int nds[4];
-    unsigned int nds_cnt;
+    uint32_t i;
+    uint32_t nds[4];
+    uint32_t nds_cnt;
+    uint32_t id;
     struct graph g;
     struct graph_tsort_iter * tsort_it = NULL;
 
     graph_init(&g, 20, 20);
 
+    printf("adding nodes...\n");
     for (i = 0 ; i < 10 ; i++) {
-        graph_add_node(&g);
+        id = graph_add_node(&g);
+        printf("new node id : %u\n", id);
     }
 
-    graph_add_edge(&g, 3, 1);
+    printf("adding edges...\n");
+    id = graph_add_edge(&g, 3, 1);
+    printf("new edge id : %u\n", id);
     graph_add_edge(&g, 1, 5);
     graph_add_edge(&g, 1, 2);
     graph_add_edge(&g, 5, 4);
@@ -112,7 +117,10 @@ main (int argc, char *argv[]) {
 
     SET_ERR(stdout);
 
+    printf("\n=== Test case 1\n");
     test_case_loop();
+    
+    printf("\n=== Test case 2\n");
     test_case_topo_sort();
 
     return 0;

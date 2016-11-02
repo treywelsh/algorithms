@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "errcodes.h"
 #include "graph.h"
 #include "graph_traversal.h"
 #include "stack.h"

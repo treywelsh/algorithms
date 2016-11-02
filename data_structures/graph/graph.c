@@ -7,6 +7,7 @@
 #include <err.h>
 #include <stack.h>
 
+#include "errcodes.h"
 #include "graph.h"
 
 /*
@@ -31,35 +32,41 @@ graph_init(struct graph* g, uint32_t nodes_max, uint32_t edges_max) {
     /* first edge leaving node */
     g->edg_first = malloc(g->nds_max * sizeof(*(g->edg_first)));
     if (g->edg_first == NULL) {
-        return 1;
+        return GRAPH_MALLOC_ERROR;
     }
     memset(g->edg_first, GRAPH_EDG_NULL, g->nds_max * sizeof(*(g->edg_first)));
 
     /* next edge leaving node */
     g->edgs_nxt = malloc(g->edgs_max * sizeof(*(g->edgs_dst)));
     if (g->edgs_nxt == NULL) {
-        return 1;
+        return GRAPH_MALLOC_ERROR;
     }
 
     /* contain the node destination of an arc */
     g->edgs_dst = malloc(g->edgs_max * sizeof(*(g->edgs_dst)));
     if (g->edgs_nxt == NULL) {
-        return 1;
+        return GRAPH_MALLOC_ERROR;
     }
 
     /* edges data */
     g->edgs = malloc(g->edgs_max * sizeof(*(g->edgs)));
     if (g->edgs == NULL) {
-        return 1;
+        return GRAPH_MALLOC_ERROR;
     }
     edges_reset_seen(g);
 
     /* nodes data */
     g->nds = malloc(g->nds_max * sizeof(*(g->nds)));
     if (g->nds == NULL) {
-        return 1;
+        return GRAPH_MALLOC_ERROR;
     }
     nodes_reset_seen(g);
+
+    /* nodes free list */
+    g->nds_free = malloc(g->nds_max * sizeof(*g->nds_free));
+    if (g->nds_free == NULL) {
+        return GRAPH_MALLOC_ERROR;
+    }
 
     /* arbitrary value */
     //stack_init(&g->nds_free, g->edgs_max);
@@ -71,13 +78,14 @@ graph_init(struct graph* g, uint32_t nodes_max, uint32_t edges_max) {
         g->edgs_nxt[i] = i + 1;
     }
 
-    g->nds_count = 0;
+    (g->nds_free)[GRAPH_ND_NULL] = GRAPH_ND_FIRST;
     for (i = GRAPH_ND_FIRST ; i < nodes_max ; i++) {
-        //stack_push(&g->nds_free, i);
+        (g->nds_free)[i] = i + 1;
         node_init(g, i);
     }
+    g->nds_count = 0;
 
-    return 0;
+    return SUCCESS;
 }
 
 void
@@ -87,31 +95,34 @@ graph_clean(struct graph* g) {
     free(g->edg_first);
     free(g->edgs_nxt);
     free(g->edgs_dst);
-    //stack_clean(&g->nds_free);
+    free(g->nds_free);
     free(g->nds);
     free(g->edgs);
 }
 
 /* TODO retrieve id in order to create edges ? */
-int
+uint32_t
 graph_add_node(struct graph* g) {
-    //uint32_t nd_id;
+    uint32_t nd_id;
 
     assert(g != NULL);
 
     if (graph_nodes_full(g)) {
         err_print("graph nodes full\n");
-        return 1;
+        return GRAPH_ND_NULL;
     }
 
-    //nd_id = stack_pop(&g->nds_free);
-    //node_reset(g, nd_id);
+    /* take node from free list */
+    nd_id = g->nds_free[GRAPH_ND_NULL];
+    g->nds_free[GRAPH_ND_NULL] = g->nds_free[nd_id];
+
+    node_reset(g, nd_id);
     (g->nds_count)++;
 
-    return 0;
+    return nd_id;
 }
 
-int
+uint32_t
 graph_add_edge(struct graph* g, uint32_t u, uint32_t v) {
     uint32_t edg_id;
 
@@ -122,7 +133,7 @@ graph_add_edge(struct graph* g, uint32_t u, uint32_t v) {
 
     if (graph_edges_full(g)) {
         err_print("graph edges full\n");
-        return 1;
+        return GRAPH_EDG_NULL;
     }
 
     /* fetch from free list */
@@ -139,7 +150,7 @@ graph_add_edge(struct graph* g, uint32_t u, uint32_t v) {
     edge_reset(g, edg_id);
     g->edgs_count++;
 
-    return 0;
+    return edg_id;
 }
 
 int
@@ -202,10 +213,12 @@ graph_remove_node(struct graph* g, uint32_t nd) {
 
     }
     node_reset(g, nd);
-
+    
+    /* add element to free list */
+    g->nds_free[nd] = g->nds_free[GRAPH_ND_NULL];
+    g->nds_free[GRAPH_ND_NULL] = nd; 
 
     (g->nds_count)--;
-    //stack_push(&g->nds_free, nd_id);
 
     return SUCCESS;
 }

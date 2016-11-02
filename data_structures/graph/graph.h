@@ -56,13 +56,16 @@ struct graph {
     uint32_t edgs_count;
     uint32_t edgs_max;
     uint32_t edgs_free; /* head of free list, which is stored in edgs_nxt.
-                             * It require no extra memory space, 
-                             * just edgs_free. */
+                         * It require no extra memory space, 
+                         * just edgs_free. */
 
     /* edges metadata */
     uint32_t * edg_first; /* first edge leaving node */
-    uint32_t * edgs_nxt; /* next edge leaving node */
+    uint32_t * edgs_nxt; /* next edge leaving node. Free elements are linked. */
     uint32_t * edgs_dst; /* contain the node destination of an arc */
+
+    /* nodes metadata */
+    uint32_t * nds_free; /* nodes freelist */
 };
 
 /* special edges */
@@ -94,12 +97,12 @@ enum {
 int graph_init(struct graph* g, uint32_t nodes_max, uint32_t edges_max);
 void graph_clean(struct graph* g);
 
-/* TODO return id of newly added elements */
-int graph_add_node(struct graph* g);
-int graph_add_edge(struct graph* g, uint32_t src, uint32_t dst);
+/* Return : id of newly added elements */
+uint32_t graph_add_node(struct graph* g);
+uint32_t graph_add_edge(struct graph* g, uint32_t src, uint32_t dst);
 
 int graph_remove_edge(struct graph* g, uint32_t src, uint32_t dst);
-int graph_remove_node(struct graph* g, uint32_t nd);
+int graph_remove_node(struct graph* g, uint32_t nd_id);
 
 int graph_is_cyclic(struct graph* g, uint32_t node_first);
 
