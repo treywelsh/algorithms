@@ -18,7 +18,7 @@ struct graph_tsort_iter; /* Private struct, use accessors */
 
 int graph_tsort_create(struct graph* g, struct graph_tsort_iter ** it);
 void graph_tsort_destroy(struct graph_tsort_iter * it);
-unsigned int graph_tsort_next(struct graph_tsort_iter * it, unsigned int * nds,
-        unsigned int nds_sz); /* return an array of nodes */
+uint32_t graph_tsort_next(struct graph_tsort_iter * it, uint32_t * nds,
+        uint32_t nds_sz); /* return an array of nodes */
 
 #endif /* GRAPH_TRAVERSAL_H_ */

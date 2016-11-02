@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,8 +14,8 @@
  */
 
 int
-graph_init(struct graph* g, unsigned int nodes_max, unsigned int edges_max) {
-    unsigned int i;
+graph_init(struct graph* g, uint32_t nodes_max, uint32_t edges_max) {
+    uint32_t i;
 
     assert(g != NULL);
     assert(nodes_max > 0);
@@ -51,24 +52,29 @@ graph_init(struct graph* g, unsigned int nodes_max, unsigned int edges_max) {
     if (g->edgs == NULL) {
         return 1;
     }
-    edges_reset_seen(g->edgs, g->edgs_max);
+    edges_reset_seen(g);
 
     /* nodes data */
     g->nds = malloc(g->nds_max * sizeof(*(g->nds)));
     if (g->nds == NULL) {
         return 1;
     }
-    nodes_reset_seen(g->nds, g->nds_max);
+    nodes_reset_seen(g);
 
     /* arbitrary value */
-    stack_init(&g->edgs_free, g->edgs_max);
-    stack_init(&g->nds_free, g->edgs_max);
+    //stack_init(&g->nds_free, g->edgs_max);
 
+    g->edgs_count = 0;
+    g->edgs_free = GRAPH_EDG_FIRST;
     for (i = GRAPH_EDG_FIRST ; i < edges_max ; i++) {
-        stack_push(&g->edgs_free, i);
+        edge_init(g, i);
+        g->edgs_nxt[i] = i + 1;
     }
+
+    g->nds_count = 0;
     for (i = GRAPH_ND_FIRST ; i < nodes_max ; i++) {
-        stack_push(&g->nds_free, i);
+        //stack_push(&g->nds_free, i);
+        node_init(g, i);
     }
 
     return 0;
@@ -81,56 +87,65 @@ graph_clean(struct graph* g) {
     free(g->edg_first);
     free(g->edgs_nxt);
     free(g->edgs_dst);
-    stack_clean(&g->edgs_free);
-    stack_clean(&g->nds_free);
+    //stack_clean(&g->nds_free);
     free(g->nds);
     free(g->edgs);
 }
 
+/* TODO retrieve id in order to create edges ? */
 int
 graph_add_node(struct graph* g) {
-    unsigned int nd_id;
+    //uint32_t nd_id;
 
     assert(g != NULL);
 
-    if (stack_is_empty(&g->nds_free)) {
+    if (graph_nodes_full(g)) {
         err_print("graph nodes full\n");
         return 1;
     }
 
-    nd_id = stack_pop(&g->nds_free); 
-    node_reset(&(g->nds)[nd_id]);
+    //nd_id = stack_pop(&g->nds_free);
+    //node_reset(g, nd_id);
+    (g->nds_count)++;
 
     return 0;
 }
 
 int
-graph_add_edge(struct graph* g, unsigned int u, unsigned int v) {
-    unsigned int edg_id;
+graph_add_edge(struct graph* g, uint32_t u, uint32_t v) {
+    uint32_t edg_id;
 
     assert(g != NULL);
     assert(!graph_edges_full(g));
+    assert(u < graph_nodes_count(g));
+    assert(v < graph_nodes_count(g));
 
-    if (stack_is_empty(&g->edgs_free)) {
+    if (graph_edges_full(g)) {
         err_print("graph edges full\n");
         return 1;
     }
 
-    edg_id = stack_pop(&g->edgs_free); 
-    edge_reset(&(g->edgs)[edg_id]);
+    /* fetch from free list */
+    edg_id = g->edgs_free;
+    g->edgs_free = g->edgs_nxt[g->edgs_free];
 
     /* fill edge linked list */
     (g->edgs_dst)[edg_id] = v;
 
     (g->edgs_nxt)[edg_id] = (g->edg_first)[u];
-    (g->edg_first)[u] = (edg_id)++;
+    (g->edg_first)[u] = edg_id;
+
+    /* prepare and count it in graph */
+    edge_reset(g, edg_id);
+    g->edgs_count++;
+
     return 0;
 }
 
 int
-graph_remove_edge(struct graph* g, unsigned int u, unsigned int v) {
-    unsigned int i, i_prev;
-    unsigned int edg_id;
+graph_remove_edge(struct graph* g, uint32_t u, uint32_t v) {
+    uint32_t i, i_prev;
+    uint32_t edg_id;
 
     assert(g != NULL);
     assert(!graph_edges_empty(g));
@@ -157,8 +172,7 @@ graph_remove_edge(struct graph* g, unsigned int u, unsigned int v) {
 
     assert(edg_id != GRAPH_EDG_NULL);
 
-    /* free'd element are stored in a stack */
-    stack_push(&g->edgs_free, edg_id);
+    g->edgs_count--;
 
     /* if last added edge */
     if (edg_id == (g->edg_first)[u]) {
@@ -168,26 +182,44 @@ graph_remove_edge(struct graph* g, unsigned int u, unsigned int v) {
         g->edgs_nxt[i_prev] = g->edgs_nxt[i];
     }
 
+    /* return to free list */
+    g->edgs_nxt[edg_id] = g->edgs_free;
+    g->edgs_free = edg_id;
+
     return 0;
 }
 
-/* TODO
 int
-graph_remove_node() {
+graph_remove_node(struct graph* g, uint32_t nd) {
+    uint32_t i;
+    uint32_t nh;
 
-    stack_push(&g->nds_free, nd_id);
+    /* remove each edges leaving node */
+    for (i = g->edg_first[nd] ; i != GRAPH_EDG_NULL ; i = g->edgs_nxt[i]) {
+        nh = g->edgs_dst[i];
+
+        graph_remove_edge(g, nd, nh);
+
+    }
+    node_reset(g, nd);
+
+
+    (g->nds_count)--;
+    //stack_push(&g->nds_free, nd_id);
+
+    return SUCCESS;
 }
-*/
 
 int
-graph_is_cyclic(struct graph* g, unsigned int first_nd) {
-    unsigned int nh;
-    unsigned int i, i_edg;
+graph_is_cyclic(struct graph* g, uint32_t first_nd) {
+    uint32_t nh;
+    uint32_t i, i_edg;
     int ret;
     struct stack stk = {0};
 
     assert(g != NULL);
     assert(first_nd < graph_nodes_count(g));
+    //printf("nodes count %u\n", graph_nodes_count(g));
 
     stack_init(&stk, graph_nodes_count(g));
     stack_push(&stk, first_nd);
@@ -220,7 +252,7 @@ graph_is_cyclic(struct graph* g, unsigned int first_nd) {
 
     /* reset after use */
 clean:
-    edges_reset_seen(g->edgs, g->edgs_max);
+    edges_reset_seen(g);
     stack_clean(&stk);
 
     return ret;
