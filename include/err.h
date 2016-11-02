@@ -3,12 +3,6 @@
 
 #include <stdio.h>
 
-/* Common error codes */
-enum {
-    SUCCESS = 0,
-    ERROR = 1,
-};
-
 extern FILE *fdout;
 
 #define SET_ERR(FD) fdout = FD
