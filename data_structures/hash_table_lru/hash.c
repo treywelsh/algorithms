@@ -6,6 +6,7 @@
 #include <sys/queue.h>
 
 #include "err.h"
+#include "errc.h"
 #include "hash_elt.h"
 #include "hash.h"
 

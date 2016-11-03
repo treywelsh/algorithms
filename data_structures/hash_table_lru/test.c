@@ -50,6 +50,7 @@ main(int argc, char *argv[]) {
         (result->count)++;
         printf("%s present with value %" PRIu64 "\n", strings[i], result->count);
 
+        /* display lru in order to check if it's works */
         printf("==========================LRU========================\n");
         ht_print_lru_content(&ht);
         printf("=====================================================\n");

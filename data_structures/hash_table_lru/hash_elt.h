@@ -7,6 +7,7 @@
 #include <sys/queue.h>
 
 #include "err.h"
+#include "errc.h"
 
 #define MAC_LEN 6
 
