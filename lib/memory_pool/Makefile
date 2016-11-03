@@ -8,7 +8,7 @@ TARGET_ST = lib$(TARGET).a
 TARGET_TEST = test_$(TARGET)
 
 CC ?= gcc
-INCLUDE= -I. -I../../include
+INCLUDE = -I. -I../../include
 SRC = pool.c 
 OBJ = $(SRC:.c=.o)
 FPIC_OBJ = $(SRC:.c=.fpic.o)
@@ -43,11 +43,12 @@ $(TARGET_SO) : $(FPIC_OBJ)
 	$(CC) $(CFLAGS) -fPIC -o $@ -c $<
 
 #test
-test: $(TARGET_SO) $(TARGET_ST)
-	#$(CC) -static $(CFLAGS) $(LDFLAGS) $(SRC) main.c -L. -l$(TARGET) -o $@_static
-	$(CC) -static $(CFLAGS) $(LDFLAGS) $(SRC) main.c $(TARGET_ST) -o $@_static
-	$(CC) $(CFLAGS) $(LDFLAGS) $(SRC) main.c $(TARGET_SO) -o $@_shared
+#test: $(TARGET_SO) $(TARGET_ST)
+test: $(TARGET_ST)
+	$(CC) -static $(CFLAGS) $(LDFLAGS) main.c $(TARGET_ST) -o $(TARGET_TEST)_static
+	#$(CC) -static $(CFLAGS) $(LDFLAGS) main.c -L. -l$(TARGET) -o $@_static
+	#$(CC) $(CFLAGS) $(LDFLAGS) main.c $(TARGET_SO) -o $@_shared
 
 .PHONY: clean
 clean :
-	@rm -f $(OBJ) $(FPIC_OBJ) $(TARGET_SO) $(TARGET_ST) $(TARGET_TEST) main.o
+	@rm -f $(OBJ) $(FPIC_OBJ) $(TARGET_SO) $(TARGET_ST) $(TARGET_TEST)_static main.o
