@@ -27,8 +27,9 @@ struct bst {
     struct bst_node * nodes;
     unsigned int nodes_len;
     unsigned int node_last;
-    //struct stack free; /* discard node_last */
-    //All in this stack at init time, check stack size !!! 
+    struct stack head_free; /* next node of free list is stored in right child
+                               of each tree node. Not obvious,
+                               but no extra space required. */
 };
 #define bst_is_full(b) ((b)->node_last == (b)->nodes_len)
 #define bst_is_empty(b) ((b)->node_last == BST_FIRST)
@@ -38,7 +39,7 @@ struct bst {
 int bst_init(struct bst* b, unsigned int max_len);
 void bst_clean(struct bst* b);
 
-int bst_insert(struct bst* b, int elm);
+int bst_insert(struct bst* b, int elm); /* TODO return node id ? */
 int bst_remove(struct bst* b, int elm);
 int bst_find(struct bst* b, int elm, unsigned int *ret);
 int bst_inorder(struct bst* b);

@@ -32,6 +32,12 @@ main (int argc, char *argv[]) {
     printf("inorder traversal : \n");
     bst_inorder(&b);
 
+    printf("remove node at index 12 ?\n");
+    bst_remove(&b, 10);
+
+    printf("inorder traversal : \n");
+    bst_inorder(&b);
+
     bst_clean(&b);
     return 0;
 }

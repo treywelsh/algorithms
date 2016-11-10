@@ -1,7 +1,7 @@
 CFLAGS ?= -Wall -Wextra
 LDFLAGS ?=
 CC ?= gcc
-INCLUDE= -I ../../tools/include/
+INCLUDE= -I ../../include/
 
 BIN = bst_test
 #SRC = $(wildcard *.c)

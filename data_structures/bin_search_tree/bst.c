@@ -125,7 +125,7 @@ int
 bst_remove(struct bst* b, int elm) {
     unsigned int i, i_prev;
     unsigned int subtree;
-    unsigned int subtree_tmp;
+    unsigned int subtree_prev;
 
     assert(b != NULL);
     assert(b->nodes != NULL);
@@ -139,59 +139,66 @@ bst_remove(struct bst* b, int elm) {
         return 1;
     }
 
-    /* Set link parent to NULL */
-    if (i == (b->nodes)[i_prev].left) {
-        (b->nodes[i_prev]).left = BST_NULL;
-    } else {
-        (b->nodes[i_prev]).right = BST_NULL;
-    }
-
     //http://www.algolist.net/Data_structures/Binary_search_tree/Removal
+    
     /* Case 1 : a node with only one child */
-
     /* left and right cannot be equal, except if both are null */
     assert(((b->nodes)[i].left != (b->nodes)[i].right)
             || ((b->nodes)[i].left == BST_NULL
                 && (b->nodes)[i].right) == BST_NULL);
-    if ((b->nodes)[i].left ^ (b->nodes)[i].right == 0) {
+    if (((b->nodes)[i].left ^ (b->nodes)[i].right) == 0) {
         printf("remove : case no child\n"); 
-        return 1;
+
+        /* Set link parent to NULL */
+        if (i == (b->nodes)[i_prev].left) {
+            (b->nodes[i_prev]).left = BST_NULL;
+        } else {
+            (b->nodes[i_prev]).right = BST_NULL;
+        }
 
     } else if (((b->nodes)[i].left != BST_NULL)
-            /* Case 2 : a node with two children */
-            printf("remove : case 2, two child\n");
             && (b->nodes)[i].right != BST_NULL) {
+
+        /* Node with two children */
+
+        printf("remove : case 2, two children\n");
+
         /* Look for smallest child, the leftmost child of right subtree */
         subtree = (b->nodes)[i].right;
         /* TODO can the condition be while(i != BST_NULL) ???*/
-        while(subtree <= b->node_last) {
+        while(subtree != BST_NULL) {
+            subtree_prev = subtree;
             subtree = (b->nodes[subtree].left);
         }
 
         /* node go up */
         if (b->nodes[i_prev].left == i) {
-            b->nodes[i_prev].left = subtree;
+            b->nodes[i_prev].left = subtree_prev;
         } else {
-            b->nodes[i_prev].right = subtree;
+            b->nodes[i_prev].right = subtree_prev;
         }
 
     } else {
+
+        /* Node with one child */
+
         //dbg_printf("only one child\n");
         printf("remove : case 1, only one child\n");
         /* child go up */
         /* TODO replace test with
          * subtree = (b->nodes[subtree].left | b->nodes[subtree].left) ^ BST_NULL;
          */
-        if (b->nodes[i].left != NULL) {
-            subtree = b->nodes[subtree].left;
+        if (b->nodes[i_prev].left != BST_NULL) {
+            subtree = b->nodes[i].left;
             b->nodes[i].left = b->nodes[subtree].left;
         } else {
-            subtree = b->nodes[subtree].right;
+            subtree = b->nodes[i].right;
             b->nodes[i].right = b->nodes[subtree].left;
         }
 
-        return 0;
     }
+
+    /* reset node ?? */
 
     /* TODO if node had childs, reconstruct subtree */
     /*
