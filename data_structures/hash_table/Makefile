@@ -1,9 +1,11 @@
+CC ?= gcc
 CFLAGS ?= -Wall -Wextra
 LDFLAGS ?=
-CC ?= gcc
+DEBUG ?= 0
+STATIC ?= 0
 INCLUDE= -I ../../include/
 
-BIN = hash_test
+TARGET = hash_test
 #SRC = $(wildcard *.c)
 SRC = hash.c main.c
 OBJ = $(SRC:.c=.o)
@@ -14,28 +16,26 @@ ifeq ($(CC), clang)
 endif
 
 #Mandatory flags
-CFLAGS += -fstrict-aliasing ${INCLUDE}
+CFLAGS += ${INCLUDE}
 
-DEBUG ?= 0
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g -fno-inline
 else
-	CFLAGS += -O2 -DNDEBUG
+	CFLAGS += -DNDEBUG -O2 -fstrict-aliasing
 endif
 
-STATIC ?= 0
 ifeq ($(STATIC), 1)
 	LDFLAGS += -static
 endif
 
-all: $(BIN)
+all: $(TARGET)
 
-$(BIN) : $(OBJ)
-	$(CC) -o $(BIN) $(OBJ) $(LDFLAGS) $(CFLAGS)
+$(TARGET) : $(OBJ)
+	$(CC) -o $(TARGET) $(OBJ) $(LDFLAGS) $(CFLAGS)
 
 %.o : %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 .PHONY: clean
 clean :
-	@rm -f $(OBJ) $(BIN)
+	@rm -f $(OBJ) $(TARGET)
