@@ -1,47 +1,46 @@
 #ifndef BST_H_
 #define BST_H_
 
-//#include "stack.h"
+#include <stdint.h>
 
 /* Single node with int values */
 struct bst_node {
     int val;
-    unsigned int left;
-    unsigned int right;
+    uint32_t left;
+    uint32_t right;
 };
 #define BST_NULL 0
 #define BST_FIRST 1
 #define bst_has_child(n) ((n)->left | (n)->right)
 
-#define node_init(n, value) do{ \
+#define bst_node_init(n, value) do{ \
     (n)->val = (value); \
     (n)->left = BST_NULL; \
     (n)->right = BST_NULL; \
 }while(0)
 
 /* BST */
-/* TODO stack empty positions ?
- * avoid reinsert all subnodes
- */
 struct bst {
     struct bst_node * nodes;
-    unsigned int nodes_len;
-    unsigned int node_last;
-    struct stack head_free; /* next node of free list is stored in right child
+    uint32_t nodes_max;
+    uint32_t nodes_count;
+    uint32_t head_free; /* next node of free list is stored in right child
                                of each tree node. Not obvious,
                                but no extra space required. */
 };
-#define bst_is_full(b) ((b)->node_last == (b)->nodes_len)
-#define bst_is_empty(b) ((b)->node_last == BST_FIRST)
-#define bst_node_count(b) ((b)->node_last - BST_FIRST)
-//#define bst_get_node(b, i) ((b)->nodes[(i)])
+typedef struct bst bst_t;
 
-int bst_init(struct bst* b, unsigned int max_len);
+#define bst_is_full(b) ((b)->nodes_count == (b)->nodes_max)
+#define bst_is_empty(b) ((b)->nodes_count == 0)
+#define bst_node_count(b) ((b)->nodes_count)
+#define bst_get_node(b, i) (&((b)->nodes)[(i)])
+
+int bst_init(struct bst* b, uint32_t max_len);
 void bst_clean(struct bst* b);
 
-int bst_insert(struct bst* b, int elm); /* TODO return node id ? */
+int bst_insert(struct bst* b, int elm);
 int bst_remove(struct bst* b, int elm);
-int bst_find(struct bst* b, int elm, unsigned int *ret);
-int bst_inorder(struct bst* b);
+int bst_find(const struct bst* b, int elm, uint32_t *ret);
+int bst_inorder(const struct bst* b);
 
 #endif /* BST_H_ */
