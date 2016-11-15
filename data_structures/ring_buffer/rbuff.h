@@ -21,6 +21,8 @@ rbuff_init(rbuf_t * b, size_t b_two_pow_sz) {
     size_t size;
 
     assert(b != NULL);
+    assert(b_two_pow_sz > 1);
+    assert(b_two_pow_sz < sizeof(size_t) * 8);
 
     size = 1 << b_two_pow_sz;
 
